@@ -7,6 +7,7 @@ fonts = css[css.index('@font-face'):css.index('*{margin')]
 plane = '''<g transform="translate(540,700) rotate(32) scale(1.05)" fill="rgba(125,255,170,.55)" stroke="#9dffbe" stroke-opacity=".6" stroke-width="3">
 <path d="M0,-260 C22,-260 30,-230 30,-200 L30,-40 L250,40 L250,80 L30,30 L24,170 L90,215 L90,245 L0,225 L-90,245 L-90,215 L-24,170 L-30,30 L-250,80 L-250,40 L-30,-40 L-30,-200 C-30,-230 -22,-260 0,-260Z"/>
 <rect x="22" y="150" width="34" height="70" rx="12"/><rect x="-56" y="150" width="34" height="70" rx="12"/></g>'''
+BARGE = """<g transform="translate(540,690) scale(1.35)" fill="#000" stroke="#9dffbe" stroke-width="5" stroke-linejoin="round"><path d="M-260,0 L260,0 L220,70 L-230,70Z" fill="rgba(125,255,170,.18)"/><rect x="90" y="-90" width="110" height="90"/><rect x="110" y="-70" width="28" height="24" fill="#9dffbe" fill-opacity=".5"/><rect x="152" y="-70" width="28" height="24" fill="#9dffbe" fill-opacity=".5"/><line x1="145" y1="-90" x2="145" y2="-150"/><text x="-120" y="48" fill="#9dffbe" stroke="none" font-family="JB" font-weight="700" font-size="34">Т-36</text></g>""" + "".join(f'<path d="M-20,{790+k*50} ' + " ".join(f"L{x},{790+k*50+ (14-k*2)*__import__('math').sin(x/90+k)}" for x in range(-20,1101,20)) + f'" fill="none" stroke="#9dffbe" stroke-opacity="{.55-k*.1}" stroke-width="3"/>' for k in range(4))
 def river(on):
     if not on: return ''
     w = ''.join(f'<path d="M{i*170-40},{900+(i%2)*25} q40,-12 80,0 t80,0" fill="none" stroke="#9dffbe" stroke-opacity=".3" stroke-width="3"/>' for i in range(8))
@@ -31,11 +32,11 @@ body{{width:1080px;height:1920px;overflow:hidden;background:radial-gradient(elli
 .vig{{position:absolute;inset:0;box-shadow:inset 0 0 280px 90px #000}}
 </style></head><body>
 <svg width=1080 height=1920 style="position:absolute;inset:0"><defs><filter id=g><feGaussianBlur stdDeviation=6 result=b/><feMerge><feMergeNode in=b/><feMergeNode in=SourceGraphic/></feMerge></filter></defs>
-<g filter="url(#g)">{river(c.get('river'))}{plane}</g>
+<g filter="url(#g)">{river(c.get('river'))}{BARGE if c.get('art')=='barge' else plane}</g>
 <circle cx="540" cy="700" r="330" fill="none" stroke="#7dffaa" stroke-opacity=".18" stroke-width="3"/><circle cx="540" cy="700" r="200" fill="none" stroke="#7dffaa" stroke-opacity=".12" stroke-width="3"/>
 <line x1="540" y1="340" x2="540" y2="1060" stroke="#7dffaa" stroke-opacity=".12" stroke-width="3"/><line x1="180" y1="700" x2="900" y2="700" stroke="#7dffaa" stroke-opacity=".12" stroke-width="3"/></svg>
 <div class=scan></div><div class=vig></div>
-<div class=hud><span class=rec>REC</span><span>{D['hud']} {c['tc']}</span></div>
+<div class=hud><span class=rec>REC</span><span>{D['hud']} {c['tc'] or ''}</span></div>
 <div class=brand>ТЫ — НА СМЕНЕ · СМЕНА №{D['n']}</div>
 <div class=log>{log}</div>
 <div class=title><div class=t1>{c['t1']}</div><div class=t2>{c['t2']}</div></div>

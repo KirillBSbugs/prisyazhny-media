@@ -80,7 +80,14 @@ function icon(kind){
  if(kind==='river')return `<g>${river(300,180).replace(/x="-20" y="300" width="1120"/,'x="0" y="300" width="560"')}</g>`;
  if(kind==='field'){let s='';for(let i=0;i<9;i++)s+=`<path d="M40,${330+i*30} L520,${330+i*30}" stroke="${G}" stroke-opacity="${.15+i*.03}" stroke-width="3"/>`;return s+`<g fill="#000" stroke="${G}" stroke-opacity=".5" stroke-width="3"><rect x="60" y="230" width="70" height="100"/><rect x="420" y="210" width="80" height="120"/><path d="M60,230 L95,195 L130,230Z"/></g>`}
  if(kind==='avenue'){let s=`<path d="M200,620 L260,160 L300,160 L360,620Z" fill="${GF}" stroke="${G}" stroke-opacity=".5" stroke-width="3"/>`;for(let i=0;i<6;i++){s+=`<rect x="${70-i*0}" y="${180+i*72}" width="${110-i*4}" height="70" fill="#000" stroke="${G}" stroke-opacity=".45" stroke-width="3"/><rect x="${390}" y="${180+i*72}" width="${110}" height="70" fill="#000" stroke="${G}" stroke-opacity=".45" stroke-width="3"/>`}return s}
+ if(kind==='fish')return `<g fill="${GF}" stroke="${G}" stroke-opacity=".7" stroke-width="4"><path d="M110,350 Q250,220 400,350 Q250,480 110,350Z"/><path d="M400,350 L480,280 L470,350 L480,420Z"/><circle cx="170" cy="335" r="10" fill="${G}"/></g><path d="M280,120 L280,250" stroke="${G}" stroke-opacity=".5" stroke-width="3"/><path d="M280,250 q0,25 -20,25" fill="none" stroke="${G}" stroke-width="4"/>`;
+ if(kind==='boot')return bootSVG(280,380,1);
+ if(kind==='bird')return `<g fill="none" stroke="${G}" stroke-width="6" stroke-linecap="round"><path d="M120,320 Q200,230 280,320 Q360,230 440,320"/><path d="M200,450 Q240,410 280,450 Q320,410 360,450" stroke-opacity=".5"/></g>`;
+ if(kind==='oars')return `<g stroke="${G}" stroke-width="10" stroke-linecap="round"><line x1="140" y1="560" x2="400" y2="160"/><line x1="420" y1="560" x2="160" y2="160"/></g><g fill="${GF}" stroke="${G}" stroke-width="4"><ellipse cx="400" cy="150" rx="26" ry="70" transform="rotate(33 400 150)"/><ellipse cx="160" cy="150" rx="26" ry="70" transform="rotate(-33 160 150)"/></g>`;
  return '';}
+function bootSVG(cx,cy,s){return `<g transform="translate(${cx},${cy}) scale(${s})" fill="${GF}" stroke="${G}" stroke-opacity=".8" stroke-width="5" stroke-linejoin="round"><path d="M-70,-230 L40,-230 L40,40 Q40,60 70,70 L180,95 Q215,105 215,140 L215,170 L-70,170Z"/><path d="M-70,130 L215,130" stroke-opacity=".5"/><path d="M-70,-200 L40,-200 M-70,-150 L40,-150" stroke-opacity=".35"/></g>`}
+function bargeSVG(cx,cy,rot){return `<g transform="translate(${cx},${cy}) rotate(${rot})" fill="#000" stroke="${G}" stroke-width="5" stroke-linejoin="round"><path d="M-260,0 L260,0 L220,70 L-230,70Z" fill="rgba(125,255,170,.16)"/><rect x="90" y="-90" width="110" height="90"/><rect x="110" y="-70" width="28" height="24" fill="${G}" fill-opacity=".5"/><rect x="152" y="-70" width="28" height="24" fill="${G}" fill-opacity=".5"/><line x1="145" y1="-90" x2="145" y2="-150"/><text x="-120" y="48" fill="${G}" stroke="none" font-family="JB" font-weight="700" font-size="34">Т-36</text></g>`}
+function waves(t,amp,y0,n){let s='';for(let k=0;k<n;k++){const y=y0+k*55,a=amp*(1-k*.12);let d=`M-20,${y}`;for(let x=-20;x<=1100;x+=20)d+=` L${x},${(y+Math.sin(x/90+t*(1.6+k*.3)+k)*a).toFixed(1)}`;s+=`<path d="${d}" fill="none" stroke="${G}" stroke-opacity="${.55-k*.08}" stroke-width="3"/>`}return s}
 function wrap(inner){return `<svg viewBox="0 0 1080 1080" width="1080" height="1080"><defs><filter id="gl"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#gl)">${inner}</g></svg>`}
 function stampHTML(st,lt,x,y,rot,ok){if(!st)return'';const k=cl((lt-.5)/.18);if(k<=0)return'';const sc=1+ (1-ease(k))*1.2;return `<div class="stamp${ok?' ok':''}" style="left:${x}px;top:${y}px;transform:translate(-50%,-50%) rotate(${rot}deg) scale(${sc});opacity:${ease(k)}">${st}</div>`}
 // ---------- scene renderers: (v, lt=local seconds, p=progress 0..1) ----------
@@ -116,6 +123,17 @@ const R_={
   s+=planeSVG(px,py,.5,-90,'rgba(157,255,190,.65)');
   s+=`<text x="540" y="320" fill="${G}" font-family="JB" font-weight="700" font-size="34" text-anchor="middle" letter-spacing="8">Р. НЕВА</text>`;
   return wrap(s)+(v.stamp?stampHTML(v.stamp,lt,540,960,-6,v.ok):'');},
+ sea(v,lt){const amp=v.storm?38:14,rk=v.storm?Math.sin(lt*2.2)*9:Math.sin(lt*.9)*3,bob=Math.sin(lt*(v.storm?2.2:.9))*(v.storm?22:8);let s='';
+  if(v.storm)for(let i=0;i<46;i++){const x=(i*97+lt*260)%1150-40,y=(i*61+lt*900)%600;s+=`<line x1="${x}" y1="${y}" x2="${x-18}" y2="${y+50}" stroke="${G}" stroke-opacity=".22" stroke-width="2"/>`}
+  if(v.island){const k=ease(cl(lt/3.5));s+=`<path d="M${-60-k*380},560 Q${80-k*380},430 ${240-k*380},560Z" fill="#000" stroke="${G}" stroke-opacity=".5" stroke-width="3"/>`}
+  s+=bargeSVG(540+(v.drift?Math.sin(lt*.3)*30:0),520+bob,rk)+waves(lt,amp,600,6);
+  if(v.label)s+=`<text x="540" y="960" fill="${G}" font-family="JB" font-weight="700" font-size="36" text-anchor="middle" letter-spacing="4">${v.label}</text>`;
+  return wrap(s)+(v.stamp?stampHTML(v.stamp,lt,540,200,-6,v.ok):'');},
+ boot(v,lt){const k=ease(cl(lt/.6));let s=bootSVG(470,500,1.25*(.9+.1*k));return wrap(s)+(v.stamp?stampHTML(v.stamp,lt,560,900,-8,v.ok):'');},
+ carrier(v,lt){let s=waves(lt,10,760,4);const k=ease(cl(lt/3));
+  s+=`<g fill="#000" stroke="${G}" stroke-width="5" stroke-linejoin="round"><path d="M40,700 L1040,700 L990,770 L120,770Z" fill="rgba(125,255,170,.14)"/><rect x="640" y="590" width="90" height="110"/><rect x="665" y="540" width="40" height="50"/><line x1="685" y1="540" x2="685" y2="480"/></g><text x="300" y="750" fill="${G}" font-family="JB" font-weight="700" font-size="30">KEARSARGE</text>`;
+  const hx=260+k*120,hy=330-k*40;s+=`<g transform="translate(${hx},${hy})" fill="${GF}" stroke="${G}" stroke-width="4"><ellipse cx="0" cy="0" rx="70" ry="34"/><path d="M60,-6 L170,-14 L170,8 L60,10Z"/><line x1="-110" y1="-46" x2="110" y2="-46" stroke-width="6" transform="rotate(${lt*800%360>180?6:-6})"/><line x1="0" y1="-34" x2="0" y2="-46"/></g><line x1="${hx}" y1="${hy+34}" x2="${hx}" y2="${hy+34+180*k}" stroke="${G}" stroke-width="3" stroke-dasharray="8 8"/>`;
+  return wrap(s)+(v.stamp?stampHTML(v.stamp,lt,540,960,-6,v.ok):'');},
  endq(v,lt){const k=ease(cl(lt/.6));return `<div class="sub" style="top:150px;opacity:${k}">СМЕНА №${C.n} · ЧАСТЬ 1 ИЗ 2</div><div class="grid" style="opacity:${k}">А · Б<br>В · Г?</div><div class="lab" style="top:700px;opacity:${k}">ПИШИ БУКВУ</div><div class="sub" style="top:800px;opacity:${k};color:${R}">ОТВЕТ — В ЧАСТИ 2</div>`;},
  endp2(v,lt){const k=ease(cl(lt/.6));return `<div class="sub" style="top:150px;opacity:${k}">СМЕНА №${C.n} · ЗАКРЫТА</div><div class="big" style="top:260px;font-size:128px;opacity:${k}">УГАДАЛ?</div><div class="lab" style="top:470px;opacity:${k}">ПИШИ В КОММЕНТЫ</div><div class="sub" style="top:600px;opacity:${k}">ПОДПИШИСЬ · СЛЕДУЮЩАЯ СМЕНА СКОРО</div><div class="sub" style="top:900px;font-size:24px;opacity:${k*.7}">ФАКТЫ — ИЗ МАТЕРИАЛОВ РАССЛЕДОВАНИЯ И СМИ</div>`;}
 };
@@ -136,7 +154,8 @@ window.frame=function(t){
  if(ph!==capCur){capCur=ph;const [a,b]=C.phr[ph];$('cap').innerHTML=W.slice(a,b+1).map((w,i)=>`<span data-i="${a+i}" class="${w.acc?'acc':''}">${w.w}</span>`).join(' ');}
  document.querySelectorAll('#cap span').forEach(e=>e.classList.toggle('on',+e.dataset.i<=wi));
  // hud
- $('tc').textContent=`${C.hud}  ${fmt(C.t0+t)}`;$('rec').style.opacity=(Math.floor(t*1.4)%2)?1:.25;
+ let day=null;for(let i=0;i<si;i++){const q=C.scenes[i];if(q.day!=null)day=q.day;if(q.dayTo!=null)day=q.dayTo}if(sc.day!=null)day=sc.day;if(day!=null&&sc.dayTo!=null){day=Math.round(day+(sc.dayTo-day)*ease(p))}
+ $('tc').textContent=day!=null?`${C.hud} · ДЕНЬ ${String(day).padStart(2,'0')}`:`${C.hud}  ${fmt(C.t0+t)}`;$('rec').style.opacity=(Math.floor(t*1.4)%2)?1:.25;
  $('barb').style.width=(t/C.dur*100)+'%';
  $('band').style.top=((t*260)%2300-200)+'px';
  // flicker: fade in, scene-cut blips, slow random

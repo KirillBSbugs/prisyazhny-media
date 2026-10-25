@@ -39,8 +39,17 @@ def add(sig, t0):
     if i >= N: return
     n = min(len(sig), N - i); out[i:i + n] += sig[:n]
 env = np.interp(tt, [0, 1.5, END - 1.2, END], [0, 1, 1, 0])
+SEA = D.get('sfx') == 'sea'
 hum = lp(rng.standard_normal(N), .02) * 1.4 + np.sin(2*np.pi*58*tt) * .05 + np.sin(2*np.pi*116*tt) * .025 + np.sin(2*np.pi*400*tt) * .004
-out += hum * env * .30
+if SEA:
+    swell = .55 + .45 * np.sin(2*np.pi*tt/6.5) * np.sin(2*np.pi*tt/2.9 + 1)
+    surf = (lp(rng.standard_normal(N), .08) - lp(rng.standard_normal(N), .01) * .5) * swell
+    out += surf * env * .55 + lp(rng.standard_normal(N), .01) * env * .9
+    for q in np.arange(4.0, END - 3, 9.0):  # hull creak
+        n = int(.6 * SR); k = np.arange(n) / SR
+        add(np.sin(2*np.pi*(180 + 60*np.sin(2*np.pi*3*k))*k) * np.sin(np.pi*k/.6) * .03, q)
+else:
+    out += hum * env * .30
 drone = (np.sin(2*np.pi*43*tt) + .5*np.sin(2*np.pi*43.6*tt)) * np.interp(tt, [0, END*.6, END], [.02, .06, .03])
 out += drone * env
 def chime(t0, v=.10):
@@ -64,10 +73,11 @@ for i, sc in enumerate(P['scenes']):
     if v.get('stamp2'): thump(sc['t'] + .5 + v['sd2']); chime(sc['t'] + .55 + v['sd2'], .05)
     if v['type'] == 'option': chime(sc['t'] + .05, .06)
     if v['type'] in ('endq', 'endp2'): chime(sc['t'] + .1, .09)
-if part == '1':
-    for q in np.arange(1.0, 26.5, 5.0): alarm(q)
-else:
-    alarm(0.6)
+if not SEA:
+    if part == '1':
+        for q in np.arange(1.0, 26.5, 5.0): alarm(q)
+    else:
+        alarm(0.6)
 out = np.tanh(out * 1.2) * .8
 pcm = (np.stack([out, out], 1) * 32767).astype(np.int16)
 with wave.open(str(wd / 'sfx.wav'), 'wb') as w:
